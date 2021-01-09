@@ -24,11 +24,10 @@ This selective behaviour is important to make each neuron sensitive to different
 
 # BCM theory
 The general idea of BCM theory is that, for a random sequence of input patterns, a synapse is learning to differentiate between those stimuli that excite the post-synaptic neuron strongly and those stimuli that excite that neuron weakly.
-In particular, the BCM algorithm performs a dynamical adaptation of the weights based on the averaged post-synaptic activity for each neuron.
+In particular, the BCM algorithm performs a dynamical adaptation of the weights based on the average post-synaptic activity of each neuron.
 
 ## BCM with lateral interactions
 Let's consider a single input example (representing the pre-synaptic activities) consisting in a column vector <a href="https://www.codecogs.com/eqnedit.php?latex=\mathbf{x}&space;=&space;(x_1,&space;...,&space;x_m)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathbf{x}&space;=&space;(x_1,&space;...,&space;x_m)" title="\mathbf{x} = (x_1, ..., x_m)" /></a>  where <a href="https://www.codecogs.com/eqnedit.php?latex=m" target="_blank"><img src="https://latex.codecogs.com/gif.latex?m" title="m" /></a> is the number of data features.
-
 The implemented BCM network has a single dense layer, composed by <a href="https://www.codecogs.com/eqnedit.php?latex=k" target="_blank"><img src="https://latex.codecogs.com/gif.latex?k" title="k" /></a> laterally-interacting neurons.
 The output column vector <a href="https://www.codecogs.com/eqnedit.php?latex=\mathbf{y}&space;=&space;(y_1,&space;...,&space;y_k)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathbf{y}&space;=&space;(y_1,&space;...,&space;y_k)" title="\mathbf{y} = (y_1, ..., y_k)" /></a>  represents the post-synaptic activities and it is given by the feedforward equation:
 
@@ -53,7 +52,7 @@ where <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_i" target="_bla
 For low values of the post-synaptic activity <a href="https://www.codecogs.com/eqnedit.php?latex={y_i}&space;<&space;\theta_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?{y_i}&space;<&space;\theta_i" title="{y_i} < \theta_i" /></a>, the function <a href="https://www.codecogs.com/eqnedit.php?latex=\Phi_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\Phi_i" title="\Phi_i" /></a> is negative; for <a href="https://www.codecogs.com/eqnedit.php?latex={y_i}&space;>&space;\theta_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?{y_i}&space;>&space;\theta_i" title="{y_i} > \theta_i" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=\Phi_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\Phi_i" title="\Phi_i" /></a> is positive.
 The rule stabilizes by allowing the modification threshold <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\theta_i" title="\theta_i" /></a> to vary as a super-linear function of the average activity of the cell. Unlike traditional methods of stabilizing Hebbian learning, this sliding threshold provides a mechanism for incoming patterns to compete.
 
-Moreover, the synaptic modifications increase when the threshold is small, and decrease as the threshold increases. The practical result is that the simulation can be run with artificially high learning rates, and wild oscillations are reduced-
+Moreover, the synaptic modifications increase when the threshold is small, and decrease as the threshold increases. The practical result is that the simulation can be run with artificially high learning rates, and wild oscillations are reduced.
 For more details about different implementation of the BCM algorithm see the following *Scholarpedia* page: [BCM theory](http://www.scholarpedia.org/article/BCM_theory) (Ref. [3]).
 
 ## Weights orthogonalization
@@ -62,7 +61,7 @@ The orthogonalization algorithm forces each neuron to become selective to differ
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\\W&space;=&space;U&space;\cdot&space;S&space;\cdot&space;V^T&space;\\&space;\\W'&space;=&space;U&space;\cdot&space;V^T" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\\W&space;=&space;U&space;\cdot&space;S&space;\cdot&space;V^T&space;\\&space;\\W'&space;=&space;U&space;\cdot&space;V^T" title="\\W = U \cdot S \cdot V^T \\ \\W' = U \cdot V^T" /></a>
 
-This transformation is actually performing an orthonormalization and so, in order not to modify the synaptic weights vectors norms, they are finally multiplied by their norm, computed after the decomposition of the matrix <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a>.
+This transformation is actually performing a weights orthonormalization and so, to restore the synaptic weights vectors norms, they are also multiplied by their original norm, computed before the matrix <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a> decomposition.
 
 The drawback of this technique is that the receptive fields of the neurons could be sensibly affected and the convergence rate to a specific pattern is significantly reduced.
 

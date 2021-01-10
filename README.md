@@ -70,12 +70,7 @@ from biolearn.utils.misc import view_weights
 
 view_weights(model.weights, dims=(28, 28))
 ```
-
-<a href="https://github.com/SimoneGasperini/biolearn/blob/main/images/synaptic_weights.pdf">
-  <div class="image">
-    <img src="images/synaptic_weights.pdf" width="400" height="400">
-  </div>
-</a>
+<img src="images/synaptic_weights.png" width="400" height="400">
 
 More complete examples are provided as `Jupyter` notebooks in the [examples](https://github.com/SimoneGasperini/biolearn/tree/main/examples) directory. For both a basic theoretical description of the models and a more exhaustive documentation about the project see the [docs](https://github.com/SimoneGasperini/biolearn/tree/main/docs) directory.
 
@@ -87,4 +82,4 @@ More complete examples are provided as `Jupyter` notebooks in the [examples](htt
 
 * <img src="https://avatars0.githubusercontent.com/u/41483077?s=400&v=4" width="25px;"/> **Mattia Ceccarelli** [git](https://github.com/Mat092), [unibo](https://www.unibo.it/sitoweb/mattia.ceccarelli5/)
 
-See also the original complete repository [plasticity](https://github.com/Nico-Curti/plasticity.git) (by Nico Curti), which provides a `Cython` wrap and the `C++` implemetation of the same models.
+See also the original complete repository [plasticity](https://github.com/Nico-Curti/plasticity.git) (by Nico Curti), which provides a `Cython` wrap and the `C++` implementation of the same models.

@@ -13,5 +13,5 @@ Welcome to biolearn's documentation!
 
    introduction
    theory
-   modules
+   api/modules
    references

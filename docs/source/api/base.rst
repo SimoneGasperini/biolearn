@@ -1,5 +1,5 @@
-Base class
-----------
+Base
+----
 
 .. automodule:: biolearn.model._base
    :members:

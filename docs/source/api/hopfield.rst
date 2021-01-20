@@ -1,5 +1,5 @@
-Hopfield class
---------------
+Hopfield
+--------
 
 .. automodule:: biolearn.model.hopfield
    :members:

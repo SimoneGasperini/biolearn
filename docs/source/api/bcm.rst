@@ -1,5 +1,5 @@
-BCM class
----------
+BCM
+---
 
 .. automodule:: biolearn.model.bcm
    :members:

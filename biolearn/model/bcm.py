@@ -1,6 +1,6 @@
 import numpy as np
 
-from biolearn.model._base import BasePlasticity
+from biolearn.model._base import Base
 from biolearn.utils.optimizer import SGD
 from biolearn.utils.weights import Normal
 
@@ -8,11 +8,9 @@ __author__  = ['Nico Curti', 'SimoneGasperini']
 __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
 
 
-class BCM (BasePlasticity):
+class BCM (Base):
 
   '''
-  Bienenstock, Cooper and Munro algorithm (BCM) [1]_.
-
   The idea of BCM theory is that for a random sequence of input patterns a synapse
   is learning to differentiate between those stimuli that excite the postsynaptic
   neuron strongly and those stimuli that excite that neuron weakly.
@@ -37,7 +35,7 @@ class BCM (BasePlasticity):
     optimizer : Optimizer (default=SGD)
       Optimizer object (derived by the base class Optimizer)
 
-    weights_init : BaseWeights object (default="Normal")
+    weights_init : BaseWeights object (default='Normal')
       Weights initialization strategy.
 
     orthogonalization : bool (default=False)
@@ -61,35 +59,6 @@ class BCM (BasePlasticity):
 
     verbose : bool (default=True)
       Turn on/off the verbosity
-
-  Examples
-  --------
-  >>> from sklearn.datasets import fetch_openml
-  >>> import pylab as plt
-  >>> from plasticity.model import BCM
-  >>>
-  >>> X, y = fetch_openml(name='mnist_784', version=1, data_id=None, return_X_y=True)
-  >>> X *= 1. / 255
-  >>> model = BCM(outputs=100, num_epochs=10)
-  >>> model.fit(X)
-  BCM(batch_size=100, outputs=100, num_epochs=10, random_state=42, epsilon=0.02, precision=1e-30)
-  >>>
-  >>> # view the memorized weights
-  >>> w = model.weights[0].reshape(28, 28)
-  >>> nc = np.max(np.abs(w))
-  >>>
-  >>> fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
-  >>> im = ax.imshow(w, cmap='bwr', vmin=-nc, vmax=nc)
-  >>> fig.colorbar(im, ticks=[np.min(w), 0, np.max(w)])
-  >>> ax.axis("off")
-  >>> plt.show()
-
-  .. image:: ../../../img/BCM_weights.gif
-
-  References
-  ----------
-  .. [1] Castellani G., Intrator N., Shouval H.Z., Cooper L.N. Solutions of the BCM learning rule
-         in a network of lateral interacting nonlinear neurons, Network Computation in Neural Systems, 10.1088/0954-898X/10/2/001
   '''
 
   def __init__(self, outputs=100, num_epochs=100,
@@ -162,12 +131,6 @@ class BCM (BasePlasticity):
 
       theta : array-like (1D)
         Array of learning progress
-
-    Notes
-    -----
-    .. note::
-      This is the core function of the BCM class since it implements
-      the BCM learning rule.
     '''
 
     theta = np.mean(output**2, axis=1, keepdims=True)
@@ -181,7 +144,6 @@ class BCM (BasePlasticity):
 
     return dw * nc, theta
 
-
   def _fit (self, X):
     '''
     Core function for the fit member
@@ -190,7 +152,6 @@ class BCM (BasePlasticity):
     ortho = True if self.orthogonalization else False
 
     return super(BCM, self)._fit(X=X, norm=False, ortho=ortho)
-
 
   def _predict (self, X):
     '''

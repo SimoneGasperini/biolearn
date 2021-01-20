@@ -3,24 +3,22 @@ from tqdm import tqdm
 from collections import deque
 
 from biolearn.utils.misc import _check_activation
-from biolearn.utils.activations import Linear
 from biolearn.utils.optimizer import Optimizer
 from biolearn.utils.weights import BaseWeights
 
 from sklearn.base import BaseEstimator
 from sklearn.base import TransformerMixin
 from sklearn.utils import check_array
-from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted
 
 __author__  = ['Nico Curti', 'SimoneGasperini']
 __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
 
 
-class BasePlasticity (BaseEstimator, TransformerMixin):
+class Base (BaseEstimator, TransformerMixin):
 
   '''
-  Abstract base class for plasticity models
+  Abstract base class for biolearn models
 
   Parameters
   ----------
@@ -36,7 +34,7 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     weights_init : BaseWeights object
       Weights initialization strategy.
 
-    activation : str (default="Linear")
+    activation : str (default='Linear')
       Name of the activation function
 
     optimizer : Optimizer (default=SGD)
@@ -103,12 +101,14 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
       theta : array-like
         Array of learning progress
     '''
+
     raise NotImplementedError
 
   def _weights_orthogonalization (self):
     '''
     Apply the orthogonalization algorithm to the weights.
     '''
+
     norms = np.linalg.norm(self.weights, axis=1)
 
     U, _, Vt = np.linalg.svd(self.weights, full_matrices=False)
@@ -120,6 +120,7 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     '''
     Apply the Lebesgue norm to the weights.
     '''
+
     if self.p != 2:
       sign = np.sign(self.weights)
       self.weights = sign * np.absolute(self.weights)**(self.p - 1)
@@ -162,18 +163,13 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
   def _check_convergency (self):
     '''
     Check if the current training has reached the convergency.
+    The convergency is estimated by the stability or not of the
+    learning parameter in a fixed number of epochs for all the outputs.
 
     Returns
     -------
       check : bool
         Check if the learning history of the model is stable.
-
-    Notes
-    -----
-    .. note::
-      The convergency is estimated by the stability or not of the
-      learning parameter in a fixed (epochs_for_convergency) number
-      of epochs for all the outputs.
     '''
 
     if len(self.history) < self.epochs_for_convergency:
@@ -182,43 +178,6 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     last = np.full_like(self.history, fill_value=self.history[-1])
 
     return np.allclose(self.history, last, atol=self.convergency_atol)#, rtol=self.convergency_atol)
-
-  def _join_input_label (self, X, y):
-    '''
-    Join the input data matrix to the labels.
-    In this way the labels array/matrix is considered as a new
-    set of inputs for the model and the plasticity model can
-    perform classification tasks without any extra supervised learning.
-
-    Parameters
-    ----------
-      X : array-like (2D)
-        Input array of data
-
-      y : array-like (1D or 2D)
-        Labels array/matrix
-
-    Returns
-    -------
-      join : array-like (2D)
-        Matrix of the merged data in which the first n_sample columns
-        are occupied by the original data and the remaining ones store
-        the labels.
-
-    Notes
-    -----
-    .. note::
-      The labels can be a 1D array or multi-dimensional array: the given
-      shape is internally reshaped according to the required dimensions.
-    '''
-
-    X, y = check_X_y(X, y, multi_output=True, y_numeric=True)
-    # reshape the labels if it is a single array
-    y = y.reshape(-1, 1) if len(y.shape) == 1 else y
-    # concatenate the labels as new inputs for neurons
-    X = np.concatenate((X, y), axis=1)
-
-    return X
 
   def _fit (self, X, norm=False, ortho=False):
     '''
@@ -279,7 +238,7 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
 
   def fit (self, X, y=None):
     '''
-    Fit the Plasticity model weights.
+    Fit the biolearn model weights.
 
     Parameters
     ----------
@@ -293,20 +252,7 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     -------
       self : object
         Return self
-
-    Notes
-    -----
-    .. note::
-      The model tries to memorize the given input producing a valid encoding.
-
-    .. warning::
-      If the array of labels is provided, it will be considered as a set of new inputs
-      for the neurons. The labels can be 1D array or multi-dimensional array: the given
-      shape is internally reshaped according to the required dimensions.
     '''
-
-    if y is not None:
-      X = self._join_input_label(X=X, y=y)
 
     X = check_array(X)
     np.random.seed(self.random_state)
@@ -330,11 +276,12 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     '''
     Core function for the predict member
     '''
+
     raise NotImplementedError
 
   def predict (self, X, y=None):
     '''
-    Reduce X applying the Plasticity encoding.
+    Reduce X applying the biolearn encoding.
 
     Parameters
     ----------
@@ -348,27 +295,11 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     -------
       Xnew : array of shape (n_values, n_samples)
         The encoded features
-
-    Notes
-    -----
-    .. warning::
-      If the array of labels is provided, it will be considered as a set of new inputs
-      for the neurons. The labels can be 1D array or multi-dimensional array: the given
-      shape is internally reshaped according to the required dimensions.
     '''
+
     check_is_fitted(self, 'weights')
-
-    if y is not None:
-      X = self._join_input_label(X=X, y=y)
-
-      # return (self.weights @ X).transpose()
-      old_activation = self.activation
-      self.activation = Linear()
-      result = self._predict(X).transpose()#np.einsum('ij, kj -> ik', self.weights, X, optimize=True).transpose() # without activation
-      self.activation = old_activation
-      return result
-
     X = check_array(X)
+
     return self._predict(X)
 
   def transform (self, X):
@@ -385,8 +316,10 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
       Xnew : array-like of shape (n_samples, encoded_features)
         The data encoded according to the model weights.
     '''
+
     check_is_fitted(self, 'weights')
     Xnew = self._predict(X)
+
     return Xnew.transpose()
 
   def fit_transform (self, X, y=None):
@@ -405,16 +338,11 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     -------
       Xnew : array-like of shape (n_samples, encoded_features)
           The data encoded according to the model weights.
-
-    Notes
-    -----
-    .. warning::
-      If the array of labels is provided, it will be considered as a set of new inputs
-      for the neurons. The labels can be 1D array or multi-dimensional array: the given
-      shape is internally reshaped according to the required dimensions.
     '''
+
     self.fit(X, y=y)
     Xnew = self.transform(X)
+
     return Xnew
 
   def save_weights (self, filename):
@@ -430,9 +358,11 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
     -------
       True if everything is ok
     '''
+
     check_is_fitted(self, 'weights')
     with open(filename, 'wb') as fp:
       self.weights.tofile(fp, sep='')
+
     return True
 
   def load_weights (self, filename):
@@ -449,18 +379,22 @@ class BasePlasticity (BaseEstimator, TransformerMixin):
       self : object
         Return self
     '''
+
     with open(filename, 'rb') as fp:
       self.weights = np.fromfile(fp, dtype=np.float, count=-1)
+
     return self
 
   def __repr__(self):
     '''
     Object representation
     '''
+
     class_name = self.__class__.__qualname__
     params = self.__init__.__code__.co_varnames
     params = set(params) - {'self'}
     args = ', '.join(['{0}={1}'.format(k, str(getattr(self, k)))
                       if not isinstance(getattr(self, k), str) else '{0}="{1}"'.format(k, str(getattr(self, k)))
                       for k in params])
+
     return '{0}({1})'.format(class_name, args)

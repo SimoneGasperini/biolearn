@@ -1,6 +1,6 @@
 import numpy as np
 
-from biolearn.model._base import BasePlasticity
+from biolearn.model._base import Base
 from biolearn.utils.optimizer import SGD
 from biolearn.utils.weights import Normal
 
@@ -8,11 +8,9 @@ __author__  = ['Nico Curti', 'SimoneGasperini']
 __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
 
 
-class Hopfield (BasePlasticity):
+class Hopfield (Base):
 
   '''
-  Hopfield and Krotov implementation of the BCM algorithm [1]_.
-
   Parameters
   ----------
     outputs : int (default=100)
@@ -30,7 +28,7 @@ class Hopfield (BasePlasticity):
     delta : float (default=0.4)
       Strength of the anti-hebbian learning
 
-    weights_init : BaseWeights object (default="Normal")
+    weights_init : BaseWeights object (default='Normal')
       Weights initialization strategy.
 
     p : float (default=2.)
@@ -54,35 +52,6 @@ class Hopfield (BasePlasticity):
 
     verbose : bool (default=True)
       Turn on/off the verbosity
-
-  Examples
-  --------
-  >>> from sklearn.datasets import fetch_openml
-  >>> import pylab as plt
-  >>> from plasticity.model import Hopfield
-  >>>
-  >>> X, y = fetch_openml(name='mnist_784', version=1, data_id=None, return_X_y=True)
-  >>> X *= 1. / 255
-  >>> model = Hopfield(outputs=100, num_epochs=10)
-  >>> model.fit(X)
-  Hopfield(batch_size=100, outputs=100, num_epochs=10, random_state=42, precision=1e-30)
-  >>>
-  >>> # view the memorized weights
-  >>> w = model.weights[0].reshape(28, 28)
-  >>> nc = np.max(np.abs(w))
-  >>>
-  >>> fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
-  >>> im = ax.imshow(w, cmap='bwr', vmin=-nc, vmax=nc)
-  >>> fig.colorbar(im, ticks=[np.min(w), 0, np.max(w)])
-  >>> ax.axis("off")
-  >>> plt.show()
-
-  .. image:: ../../../img/Hopfield_weights.gif
-
-  References
-  ----------
-  .. [1] Dmitry Krotov, and John J. Hopfield. Unsupervised learning by competing hidden units,
-         PNAS, 2019, www.pnas.org/cgi/doi/10.1073/pnas.1820458116
   '''
 
   def __init__(self, outputs=100, num_epochs=100,
@@ -110,9 +79,11 @@ class Hopfield (BasePlasticity):
 
   def _weights_update (self, X, output):
     '''
-    Approximation introduced by Krotov.
-    Instead of solving dynamical equations we use the currents as a proxy
-    for ranking of the final activities as suggested in [0].
+    This is the core function of the Hopfield model since it implements the
+    Hopfield learning rule using the approximation introduced by Krotov:
+    instead of solving the dynamical equations, the currents are used as a
+    proxy for ranking the outputs activities and then computing the weights
+    update.
 
     Parameters
     ----------
@@ -129,12 +100,6 @@ class Hopfield (BasePlasticity):
 
       theta : array-like (1D)
         Array of learning progress
-
-    Notes
-    -----
-    .. note::
-      This is the core function of the Hopfield class since it implements
-      the Hopfield learning rule.
     '''
 
     order = np.argsort(output, axis=0)
@@ -151,14 +116,12 @@ class Hopfield (BasePlasticity):
 
     return ds * nc, xx
 
-
   def _fit (self, X):
     '''
     Core function for the fit member
     '''
 
     return super(Hopfield, self)._fit(X=X, norm=True)
-
 
   def _predict (self, X):
     '''

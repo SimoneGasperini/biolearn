@@ -1,7 +1,7 @@
 # Biolearn
 ### Unsupervised neural networks with biological-inspired learning rules
-![Python version](https://img.shields.io/badge/python-3.8-blue.svg)
-[![docs](https://readthedocs.org/projects/biolearn/badge/?version=latest)](https://biolearn.readthedocs.io/en/latest/?badge=latest)
+[![build](https://travis-ci.com/SimoneGasperini/biolearn.svg?)](https://travis-ci.com/)
+[![docs](https://readthedocs.org/projects/biolearn/badge/?version=latest)](https://biolearn.readthedocs.io/)
 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -74,7 +74,7 @@ view_weights(model.weights, dims=(28, 28))
 ```
 <img src="images/synaptic_weights.png" width="400" height="400">
 
-More complete examples are provided as `Jupyter` notebooks in the [examples](https://github.com/SimoneGasperini/biolearn/tree/main/examples) directory. For both a basic theoretical description of the models and an exhaustive explanation about how to use the code see the [documentation](https://biolearn.readthedocs.io/en/latest/#).
+More complete examples are provided as `Jupyter` notebooks in the [examples](https://github.com/SimoneGasperini/biolearn/tree/main/examples) directory. For both a basic theoretical description of the models and an exhaustive explanation about how to use the code see the [documentation](https://biolearn.readthedocs.io/).
 
 
 ## Authors

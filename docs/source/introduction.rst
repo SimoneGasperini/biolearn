@@ -8,7 +8,7 @@ human brain. Indeed, even if the architectures of real and artificial
 neural networks are similar, the supervised training based on
 backpropagation and the biological learning rules are unrelated.
 
-In the paper by `D. Krotov and J. J.
+In the paper by `D. Krotov and J.
 Hopfield <https://arxiv.org/abs/1806.10181>`__ (Ref. [1]), it is
 proposed an unusual learning rule, which has a degree of biological
 plausibility, and which is motivated by well known ideas in

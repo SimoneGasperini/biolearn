@@ -25,5 +25,5 @@ described in the following papers:
    introduction
    theory
    api/api
-   examples/examples
+   examples
    references

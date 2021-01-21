@@ -20,7 +20,7 @@ The only requirements to successfully install, test, and use the `biolearn` pack
 * hypothesis
 
 This `Python` version guarantees a good integration with the other common Machine Learning tools provided by `scikit-learn` package.
-In this way you can use the `biolearn` algorithm as an equivalent alternative in other pipelines.
+In this way you can use the `biolearn` as an equivalent alternative in other pipelines.
 Like other Machine Learning algorithms also the `biolearn` ones depend on many hyper-parameters, which have to be tuned according to the given problem.
 
 
@@ -72,9 +72,10 @@ from biolearn.utils.misc import view_weights
 
 view_weights(model.weights, dims=(28, 28))
 ```
-<img src="images/synaptic_weights.png" width="400" height="400">
+<img src="images/weights_readme.png" width="500" height="500">
 
-More complete examples are provided as `Jupyter` notebooks in the [examples](https://github.com/SimoneGasperini/biolearn/tree/main/examples) directory. For both a basic theoretical description of the models and an exhaustive explanation about how to use the code see the [documentation](https://biolearn.readthedocs.io/).
+In the [examples](https://github.com/SimoneGasperini/biolearn/tree/main/examples) directory, some simple `Jupyter notebooks` are provided as quick tutorials, and the basic features about BCM model training are shown.
+Finally, in the online [documentation](https://biolearn.readthedocs.io/), you can find a general presentation and the mathematical characterization of the models, together with classes API description and more complete examples.
 
 
 ## Authors

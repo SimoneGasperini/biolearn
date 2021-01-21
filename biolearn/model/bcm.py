@@ -11,13 +11,6 @@ __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
 class BCM (Base):
 
   '''
-  The idea of BCM theory is that for a random sequence of input patterns a synapse
-  is learning to differentiate between those stimuli that excite the postsynaptic
-  neuron strongly and those stimuli that excite that neuron weakly.
-  Learned BCM feature detectors cannot, however, be simply used as the lowest layer
-  of a feedforward network so that the entire network is competitive to a network of
-  the same size trained with backpropagation algorithm end-to-end.
-
   Parameters
   ----------
     outputs : int (default=100)

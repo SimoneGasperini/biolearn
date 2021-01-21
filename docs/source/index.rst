@@ -24,5 +24,6 @@ described in the following papers:
 
    introduction
    theory
-   api/modules
+   api/api
+   examples/examples
    references

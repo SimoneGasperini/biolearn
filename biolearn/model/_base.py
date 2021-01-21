@@ -18,8 +18,6 @@ __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
 class Base (BaseEstimator, TransformerMixin):
 
   '''
-  Abstract base class for biolearn models
-
   Parameters
   ----------
     outputs : int (default=100)

@@ -4,3 +4,6 @@ scikit-learn
 tqdm
 pytest
 hypothesis
+
+sphinx
+sphinx-rtd-theme

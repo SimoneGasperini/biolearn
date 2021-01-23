@@ -1,8 +1,9 @@
 import numpy as np
 
 from biolearn.model._base import Base
-from biolearn.utils.optimizer import SGD
 from biolearn.utils.weights import Normal
+from biolearn.utils.activations import Linear
+from biolearn.utils.optimizer import SGD
 
 __author__  = ['Nico Curti', 'SimoneGasperini']
 __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
@@ -13,6 +14,9 @@ class Hopfield (Base):
   '''
   Parameters
   ----------
+    inputs : int (default=None)
+      Number of input units
+
     outputs : int (default=100)
       Number of hidden units
 
@@ -22,14 +26,14 @@ class Hopfield (Base):
     batch_size : int (default=10)
       Size of the minibatch
 
+    weights_init : BaseWeights (default=Normal)
+      Weights initialization strategy object
+
     optimizer : Optimizer (default=SGD)
-      Optimizer object (derived by the base class Optimizer)
+      Optimizer object
 
     delta : float (default=0.4)
       Strength of the anti-hebbian learning
-
-    weights_init : BaseWeights object (default='Normal')
-      Weights initialization strategy.
 
     p : float (default=2.)
       Lebesgue norm of the weights
@@ -42,7 +46,7 @@ class Hopfield (Base):
 
     epochs_for_convergency : int (default=None)
       Number of stable epochs requested for the convergency.
-      If None the training proceeds up to the maximum number of epochs (num_epochs).
+      If None the training proceeds up to the maximum number of epochs (num_epochs)
 
     convergency_atol : float (default=0.01)
       Absolute tolerance requested for the convergency
@@ -54,28 +58,19 @@ class Hopfield (Base):
       Turn on/off the verbosity
   '''
 
-  def __init__(self, outputs=100, num_epochs=100,
-      batch_size=100, delta=.4,
-      optimizer=SGD(learning_rate=2e-2),
-      weights_init=Normal(mu=0., std=1.),
-      p=2., k=2,
-      precision=1e-30,
-      epochs_for_convergency=None,
-      convergency_atol=0.01,
+  def __init__(self, inputs=None, outputs=100, num_epochs=100, batch_size=100,
+      weights_init=Normal(), optimizer=SGD(), delta=.4, p=2., k=2,
+      precision=1e-30, epochs_for_convergency=None, convergency_atol=0.01,
       random_state=None, verbose=True):
 
     self.delta = delta
     self.p = p
     self.k = k
 
-    super (Hopfield, self).__init__(outputs=outputs, num_epochs=num_epochs,
-                                    batch_size=batch_size, activation='Linear',
-                                    optimizer=optimizer,
-                                    weights_init=weights_init,
-                                    precision=precision,
-                                    epochs_for_convergency=epochs_for_convergency,
-                                    convergency_atol=convergency_atol,
-                                    random_state=random_state, verbose=verbose)
+    super (Hopfield, self).__init__(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
+                                    weights_init=weights_init, activation=Linear(), optimizer=optimizer,
+                                    precision=precision, epochs_for_convergency=epochs_for_convergency,
+                                    convergency_atol=convergency_atol, random_state=random_state, verbose=verbose)
 
   def _weights_update (self, X, output):
     '''

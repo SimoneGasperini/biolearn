@@ -1,8 +1,9 @@
 import numpy as np
 
 from biolearn.model._base import Base
-from biolearn.utils.optimizer import SGD
 from biolearn.utils.weights import Normal
+from biolearn.utils.activations import Logistic
+from biolearn.utils.optimizer import SGD
 
 __author__  = ['Nico Curti', 'SimoneGasperini']
 __email__ = ['nico.curit2@unibo.it', 'simone.gasperini2@studio.unibo.it']
@@ -13,6 +14,9 @@ class BCM (Base):
   '''
   Parameters
   ----------
+    inputs : int (default=None)
+      Number of input units
+
     outputs : int (default=100)
       Number of hidden units
 
@@ -22,14 +26,14 @@ class BCM (Base):
     batch_size : int (default=10)
       Size of the minibatch
 
-    activation : string or Activations object (default='Logistic')
-      Activation function to apply
+    weights_init : BaseWeights (default=Normal)
+      Weights initialization strategy object
+
+    activation : Activations (default=Logistic)
+      Activation function object
 
     optimizer : Optimizer (default=SGD)
-      Optimizer object (derived by the base class Optimizer)
-
-    weights_init : BaseWeights object (default='Normal')
-      Weights initialization strategy.
+      Optimizer object
 
     orthogonalization : bool (default=False)
       Turn on/off the synaptic weights orthogonalization algorithm
@@ -42,7 +46,7 @@ class BCM (Base):
 
     epochs_for_convergency : int (default=None)
       Number of stable epochs requested for the convergency.
-      If None the training proceeds up to the maximum number of epochs (num_epochs).
+      If None the training proceeds up to the maximum number of epochs (num_epochs)
 
     convergency_atol : float (default=0.01)
       Absolute tolerance requested for the convergency
@@ -54,29 +58,24 @@ class BCM (Base):
       Turn on/off the verbosity
   '''
 
-  def __init__(self, outputs=100, num_epochs=100,
-      batch_size=100, activation='Logistic',
-      optimizer=SGD(learning_rate=2e-2),
-      weights_init=Normal(mu=0., std=1.),
-      orthogonalization=False,
-      interaction_strength=0.,
-      precision=1e-30,
-      epochs_for_convergency=None,
-      convergency_atol=0.01,
+  def __init__(self, inputs=None, outputs=100, num_epochs=100, batch_size=100,
+      weights_init=Normal(), activation=Logistic(), optimizer=SGD(),
+      orthogonalization=False, interaction_strength=0., precision=1e-30,
+      epochs_for_convergency=None, convergency_atol=0.01,
       random_state=None, verbose=True):
 
     self.orthogonalization = orthogonalization
+
+    if not -1. < interaction_strength < 1.:
+      raise ValueError('Incorrect value of interaction_strength. It must be in the interval ]-1,1[')
+
     self._interaction_matrix = self._weights_interaction(interaction_strength, outputs)
     self.interaction_strength = interaction_strength
 
-    super (BCM, self).__init__(outputs=outputs, num_epochs=num_epochs,
-                               batch_size=batch_size, activation=activation,
-                               optimizer=optimizer,
-                               weights_init=weights_init,
-                               precision=precision,
-                               epochs_for_convergency=epochs_for_convergency,
-                               convergency_atol=convergency_atol,
-                               random_state=random_state, verbose=verbose)
+    super (BCM, self).__init__(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
+                               weights_init=weights_init, activation=activation, optimizer=optimizer,
+                               precision=precision, epochs_for_convergency=epochs_for_convergency,
+                               convergency_atol=convergency_atol, random_state=random_state, verbose=verbose)
 
   def _weights_interaction (self, strength, outputs):
     '''

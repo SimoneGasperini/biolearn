@@ -3,8 +3,9 @@ from tqdm import tqdm
 from collections import deque
 
 from biolearn.utils.misc import _check_activation
-from biolearn.utils.optimizer import Optimizer
 from biolearn.utils.weights import BaseWeights
+from biolearn.utils.activations import Activations
+from biolearn.utils.optimizer import Optimizer
 
 from sklearn.base import BaseEstimator
 from sklearn.base import TransformerMixin
@@ -20,6 +21,9 @@ class Base (BaseEstimator, TransformerMixin):
   '''
   Parameters
   ----------
+    inputs : int (default=None)
+      Number of input units
+
     outputs : int (default=100)
       Number of hidden units
 
@@ -29,21 +33,21 @@ class Base (BaseEstimator, TransformerMixin):
     batch_size : int (default=100)
       Size of the minibatch
 
-    weights_init : BaseWeights object
-      Weights initialization strategy.
+    weights_init : BaseWeights (default=BaseWeights)
+      Weights initialization strategy object
 
-    activation : str (default='Linear')
-      Name of the activation function
+    activation : Activations (default=Activations)
+      Activation function object
 
-    optimizer : Optimizer (default=SGD)
-      Optimizer object (derived by the base class Optimizer)
+    optimizer : Optimizer (default=Optimizer)
+      Optimizer object
 
     precision : float (default=1e-30)
       Parameter that controls numerical precision of the weight updates
 
     epochs_for_convergency : int (default=None)
       Number of stable epochs requested for the convergency.
-      If None the training proceeds up to the maximum number of epochs (num_epochs).
+      If None the training proceeds up to the maximum number of epochs (num_epochs)
 
     convergency_atol : float (default=0.01)
       Absolute tolerance requested for the convergency
@@ -55,29 +59,30 @@ class Base (BaseEstimator, TransformerMixin):
       Turn on/off the verbosity
   '''
 
-  def __init__ (self, outputs=100, num_epochs=100,
-      activation='Linear', optimizer=Optimizer,
-      batch_size=100, weights_init=BaseWeights,
-      precision=1e-30,
-      epochs_for_convergency=None,
-      convergency_atol=0.01,
-      random_state=None,
-      verbose=True):
+  def __init__ (self, inputs=None, outputs=100, num_epochs=100, batch_size=100,
+      weights_init=BaseWeights, activation=Activations, optimizer=Optimizer,
+      precision=1e-30, epochs_for_convergency=None, convergency_atol=0.01,
+      random_state=None, verbose=True):
 
     _, activation = _check_activation(self, activation)
 
+    self.inputs = inputs
     self.outputs = outputs
     self.num_epochs = num_epochs
     self.batch_size = batch_size
+    self.weights_init = weights_init
     self.activation = activation
     self.optimizer = optimizer
-    self.weights_init = weights_init
     self.precision = precision
     self.epochs_for_convergency = epochs_for_convergency if epochs_for_convergency is not None else num_epochs
     self.epochs_for_convergency = max(self.epochs_for_convergency, 1)
     self.convergency_atol = convergency_atol
     self.random_state = random_state
     self.verbose = verbose
+
+    if inputs is not None:
+      #self.weights = np.random.normal(loc=self.mu, scale=self.sigma, size=(outputs, inputs))
+      self.weights = self.weights_init.get(size=(outputs, inputs))
 
   def _weights_update (self, X, output):
     '''
@@ -256,12 +261,19 @@ class Base (BaseEstimator, TransformerMixin):
     np.random.seed(self.random_state)
     num_samples, num_features = X.shape
 
+    if self.inputs is not None and self.inputs != num_features:
+      raise ValueError('Incorrect number of data features. It must match the number of inputs units. '
+                       'Given {:d} for {:d} inputs'.format(num_features, self.inputs))
+
     if self.batch_size > num_samples:
-      raise ValueError('Incorrect batch_size found. The batch_size must be less or equal to the number of samples. '
+      raise ValueError('Incorrect batch_size. It must be less or equal to the number of samples. '
                        'Given {:d} for {:d} samples'.format(self.batch_size, num_samples))
 
-    #self.weights = np.random.normal(loc=self.mu, scale=self.sigma, size=(self.outputs, num_features))
-    self.weights = self.weights_init.get(size=(self.outputs, num_features))
+    if self.inputs is None:
+      self.inputs = num_features
+      #self.weights = np.random.normal(loc=self.mu, scale=self.sigma, size=(self.outputs, self.inputs))
+      self.weights = self.weights_init.get(size=(self.outputs, self.inputs))
+
     self.history = deque(maxlen=self.epochs_for_convergency)
     self._thetas = []
     self._weights_meandiff = []

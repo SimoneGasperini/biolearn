@@ -6,10 +6,11 @@ from biolearn.utils.activations import *
 from biolearn.utils.optimizer import *
 from biolearn.utils.weights import *
 
+import numpy as np
 from biolearn.model.bcm import BCM
 
 from hypothesis import strategies as st
-from hypothesis import given
+from hypothesis import given, settings
 
 
 __author__  = ['SimoneGasperini']
@@ -31,33 +32,42 @@ weights = [GlorotNormal, GlorotUniform, HeNormal, HeUniform,
 
 
 
-@given(outputs                = st.integers(min_value=1, max_value=1000),
+@given(inputs                 = st.integers(min_value=1, max_value=1000),
+       outputs                = st.integers(min_value=1, max_value=1000),
        num_epochs             = st.integers(min_value=1),
-       batch_size             = st.integers(),
+       batch_size             = st.integers(min_value=1),
+       weights_init           = st.sampled_from(weights),
        activation             = st.sampled_from(activations),
        optimizer              = st.sampled_from(optimizers),
-       weights_init           = st.sampled_from(weights),
        orthogonalization      = st.booleans(),
-       interaction_strength   = st.floats(),
+       interaction_strength   = st.floats(min_value=-1., max_value=1., exclude_min=True, exclude_max=True),
        precision              = st.floats(),
        epochs_for_convergency = st.integers(min_value=1),
        convergency_atol       = st.floats(),
        random_state           = st.integers(),
        verbose                = st.booleans()
        )
-def test_constructor (outputs, num_epochs, batch_size, activation, optimizer, weights_init,
+@settings(deadline=None)
+def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, activation, optimizer,
                       orthogonalization, interaction_strength, precision, epochs_for_convergency,
                       convergency_atol, random_state, verbose):
   '''
   Test the BCM object constructor.
+  The number of inputs and outputs are bounded in a range of reasonable values
+  (also to prevent the test from being too slow).
+  The interaction_strength parameter is bounded in the interval ]-1,1[
+  (excluding the extremes because in those cases we would have a singular
+  interaction matrix). If incorrect values of interaction_strength are passed,
+  a ValueError is raised.
   '''
 
-  params = {'outputs'                : outputs,
+  params = {'inputs'                 : inputs,
+            'outputs'                : outputs,
             'num_epochs'             : num_epochs,
             'batch_size'             : batch_size,
+            'weights_init'           : weights_init(),
             'activation'             : activation(),
             'optimizer'              : optimizer(),
-            'weights_init'           : weights_init(),
             'orthogonalization'      : orthogonalization,
             'interaction_strength'   : interaction_strength,
             'precision'              : precision,

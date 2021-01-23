@@ -8,7 +8,7 @@ from biolearn.utils.weights import *
 from biolearn.model.hopfield import Hopfield
 
 from hypothesis import strategies as st
-from hypothesis import given
+from hypothesis import given, settings
 
 
 __author__  = ['SimoneGasperini']
@@ -24,12 +24,13 @@ weights = [GlorotNormal, GlorotUniform, HeNormal, HeUniform,
 
 
 
-@given(outputs                = st.integers(min_value=1, max_value=1000),
+@given(inputs                 = st.integers(min_value=1, max_value=1000),
+       outputs                = st.integers(min_value=1, max_value=1000),
        num_epochs             = st.integers(min_value=1),
-       batch_size             = st.integers(),
+       batch_size             = st.integers(min_value=1),
+       weights_init           = st.sampled_from(weights),
        optimizer              = st.sampled_from(optimizers),
        delta                  = st.floats(),
-       weights_init           = st.sampled_from(weights),
        p                      = st.floats(),
        k                      = st.integers(),
        precision              = st.floats(),
@@ -38,19 +39,23 @@ weights = [GlorotNormal, GlorotUniform, HeNormal, HeUniform,
        random_state           = st.integers(),
        verbose                = st.booleans()
        )
-def test_constructor (outputs, num_epochs, batch_size, optimizer, delta,
-                      weights_init, p, k, precision, epochs_for_convergency,
+@settings(deadline=None)
+def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, optimizer,
+                      delta, p, k, precision, epochs_for_convergency,
                       convergency_atol, random_state, verbose):
   '''
   Test the Hopfield object constructor.
+  The number of inputs and outputs are bounded in a range of reasonable values
+  (also to prevent the test from being too slow).
   '''
 
-  params = {'outputs'                : outputs,
+  params = {'inputs'                 : inputs,
+            'outputs'                : outputs,
             'num_epochs'             : num_epochs,
             'batch_size'             : batch_size,
+            'weights_init'           : weights_init(),
             'optimizer'              : optimizer(),
             'delta'                  : delta,
-            'weights_init'           : weights_init(),
             'p'                      : p,
             'k'                      : k,
             'precision'              : precision,

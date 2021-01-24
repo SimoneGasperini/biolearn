@@ -10,7 +10,7 @@ import numpy as np
 from biolearn.model.bcm import BCM
 
 from hypothesis import strategies as st
-from hypothesis import given, settings
+from hypothesis import given, settings, assume
 
 
 __author__  = ['SimoneGasperini']
@@ -81,14 +81,15 @@ def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, act
 
 
 
-@given(inputs                 = st.integers(min_value=1, max_value=20),
-       outputs                = st.integers(min_value=1, max_value=10),
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=20),
+       outputs                = st.integers(min_value=1, max_value=5),
        num_epochs             = st.integers(min_value=1, max_value=10),
-       batch_size             = st.integers(min_value=1, max_value=100),
+       batch_size             = st.integers(min_value=1, max_value=1000),
        optimizer              = st.sampled_from(optimizers),
        )
 @settings(deadline=None)
-def test_positive_weights_with_negative_data (inputs, outputs, num_epochs, batch_size, optimizer):
+def test_positive_weights_with_negative_data (samples, inputs, outputs, num_epochs, batch_size, optimizer):
   '''
   Test the model stability in case of positive (or null) weights,
   negative (or null) input data, and Relu activation function (so that f(x)=0
@@ -99,7 +100,9 @@ def test_positive_weights_with_negative_data (inputs, outputs, num_epochs, batch
   are initialized using a truncated normal distribution N*(2,1).
   '''
 
-  data = np.random.uniform(low=-1., high=0., size=(100,inputs)).astype(float)
+  assume(batch_size <= samples)
+
+  data = np.random.uniform(low=-1., high=0., size=(samples,inputs)).astype(float)
 
   bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
             weights_init=TruncatedNormal(mu=2.,std=1.),
@@ -114,14 +117,15 @@ def test_positive_weights_with_negative_data (inputs, outputs, num_epochs, batch
 
 
 
-@given(inputs                 = st.integers(min_value=1, max_value=20),
-       outputs                = st.integers(min_value=1, max_value=10),
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=20),
+       outputs                = st.integers(min_value=1, max_value=5),
        num_epochs             = st.integers(min_value=1, max_value=10),
-       batch_size             = st.integers(min_value=1, max_value=100),
+       batch_size             = st.integers(min_value=1, max_value=1000),
        optimizer              = st.sampled_from(optimizers),
        )
 @settings(deadline=None)
-def test_negative_weights_with_positive_data (inputs, outputs, num_epochs, batch_size, optimizer):
+def test_negative_weights_with_positive_data (samples, inputs, outputs, num_epochs, batch_size, optimizer):
   '''
   Test the model stability in case of negative (or null) weights,
   positive (or null) input data, and Relu activation function (so that f(x)=0
@@ -132,7 +136,9 @@ def test_negative_weights_with_positive_data (inputs, outputs, num_epochs, batch
   are initialized using a truncated normal distribution N*(-2,1).
   '''
 
-  data = np.random.uniform(low=0., high=1., size=(100,inputs)).astype(float)
+  assume(batch_size <= samples)
+
+  data = np.random.uniform(low=0., high=1., size=(samples,inputs)).astype(float)
 
   bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
             weights_init=TruncatedNormal(mu=-2.,std=1.),

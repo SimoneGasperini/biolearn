@@ -57,8 +57,7 @@ def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, act
   (also to prevent the test from being too slow).
   The interaction_strength parameter is bounded in the interval ]-1,1[
   (excluding the extremes because in those cases we would have a singular
-  interaction matrix). If incorrect values of interaction_strength are passed,
-  a ValueError is raised.
+  and not invertible interaction matrix).
   '''
 
   params = {'inputs'                 : inputs,
@@ -79,3 +78,69 @@ def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, act
 
   bcm = BCM(**params)
   assert params == bcm.get_params()
+
+
+
+@given(inputs                 = st.integers(min_value=1, max_value=20),
+       outputs                = st.integers(min_value=1, max_value=10),
+       num_epochs             = st.integers(min_value=1, max_value=10),
+       batch_size             = st.integers(min_value=1, max_value=100),
+       optimizer              = st.sampled_from(optimizers),
+       )
+@settings(deadline=None)
+def test_positive_weights_with_negative_data (inputs, outputs, num_epochs, batch_size, optimizer):
+  '''
+  Test the model stability in case of positive (or null) weights,
+  negative (or null) input data, and Relu activation function (so that f(x)=0
+  forall x <= 0).
+  There are no lateral interactions at all between the neurons and the
+  orthogonalization algorithm is disabled.
+  The data are generated using a uniform distribution U(-1,0) and the weights
+  are initialized using a truncated normal distribution N*(2,1).
+  '''
+
+  data = np.random.uniform(low=-1., high=0., size=(100,inputs)).astype(float)
+
+  bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
+            weights_init=TruncatedNormal(mu=2.,std=1.),
+            activation=Relu(),
+            optimizer=optimizer(), verbose=False)
+
+  initial_weights = np.copy(bcm.weights)
+  bcm.fit(X=data)
+  final_weights = np.copy(bcm.weights)
+
+  assert np.all(initial_weights == final_weights)
+
+
+
+@given(inputs                 = st.integers(min_value=1, max_value=20),
+       outputs                = st.integers(min_value=1, max_value=10),
+       num_epochs             = st.integers(min_value=1, max_value=10),
+       batch_size             = st.integers(min_value=1, max_value=100),
+       optimizer              = st.sampled_from(optimizers),
+       )
+@settings(deadline=None)
+def test_negative_weights_with_positive_data (inputs, outputs, num_epochs, batch_size, optimizer):
+  '''
+  Test the model stability in case of negative (or null) weights,
+  positive (or null) input data, and Relu activation function (so that f(x)=0
+  forall x <= 0).
+  There are no lateral interactions at all between the neurons and the
+  orthogonalization algorithm is disabled.
+  The data are generated using a uniform distribution U(0,1) and the weights
+  are initialized using a truncated normal distribution N*(-2,1).
+  '''
+
+  data = np.random.uniform(low=0., high=1., size=(100,inputs)).astype(float)
+
+  bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
+            weights_init=TruncatedNormal(mu=-2.,std=1.),
+            activation=Relu(),
+            optimizer=optimizer(), verbose=False)
+
+  initial_weights = np.copy(bcm.weights)
+  bcm.fit(X=data)
+  final_weights = np.copy(bcm.weights)
+
+  assert np.all(initial_weights == final_weights)

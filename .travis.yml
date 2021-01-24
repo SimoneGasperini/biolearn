@@ -10,7 +10,7 @@ install:
   - python setup.py install
 
 script:
-  - pytest tests
+  - pytest -v tests
 
 notifications:
   email:

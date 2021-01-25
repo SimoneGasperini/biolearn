@@ -89,47 +89,10 @@ def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, act
        optimizer              = st.sampled_from(optimizers),
        )
 @settings(deadline=None)
-def test_positive_weights_with_negative_data (samples, inputs, outputs, num_epochs, batch_size, optimizer):
-  '''
-  Test the model stability in case of positive (or null) weights,
-  negative (or null) input data, and Relu activation function (so that f(x)=0
-  forall x <= 0).
-  There are no lateral interactions at all between the neurons and the
-  orthogonalization algorithm is disabled.
-  The data are generated using a uniform distribution U(-1,0) and the weights
-  are initialized using a truncated normal distribution N*(2,1).
-  '''
-
-  assume(batch_size <= samples)
-
-  data = np.random.uniform(low=-1., high=0., size=(samples,inputs)).astype(float)
-
-  bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
-            weights_init=TruncatedNormal(mu=2.,std=1.),
-            activation=Relu(),
-            optimizer=optimizer(), verbose=False)
-
-  initial_weights = np.copy(bcm.weights)
-  bcm.fit(X=data)
-  final_weights = np.copy(bcm.weights)
-
-  assert np.all(initial_weights == final_weights)
-
-
-
-@given(samples                = st.integers(min_value=1, max_value=1000),
-       inputs                 = st.integers(min_value=1, max_value=20),
-       outputs                = st.integers(min_value=1, max_value=5),
-       num_epochs             = st.integers(min_value=1, max_value=10),
-       batch_size             = st.integers(min_value=1, max_value=1000),
-       optimizer              = st.sampled_from(optimizers),
-       )
-@settings(deadline=None)
-def test_negative_weights_with_positive_data (samples, inputs, outputs, num_epochs, batch_size, optimizer):
+def test_fit_negative_weights (samples, inputs, outputs, num_epochs, batch_size, optimizer):
   '''
   Test the model stability in case of negative (or null) weights,
-  positive (or null) input data, and Relu activation function (so that f(x)=0
-  forall x <= 0).
+  and Relu activation function (so that f(x)=0 forall x <= 0).
   There are no lateral interactions at all between the neurons and the
   orthogonalization algorithm is disabled.
   The data are generated using a uniform distribution U(0,1) and the weights
@@ -143,10 +106,55 @@ def test_negative_weights_with_positive_data (samples, inputs, outputs, num_epoc
   bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,
             weights_init=TruncatedNormal(mu=-2.,std=1.),
             activation=Relu(),
-            optimizer=optimizer(), verbose=False)
+            optimizer=optimizer(),
+            verbose=False)
 
   initial_weights = np.copy(bcm.weights)
   bcm.fit(X=data)
   final_weights = np.copy(bcm.weights)
 
   assert np.all(initial_weights == final_weights)
+
+
+
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=50),
+       outputs                = st.integers(min_value=1, max_value=10),
+       batch_size             = st.integers(min_value=1, max_value=1000),
+       weights_init           = st.sampled_from(weights),
+       activation             = st.sampled_from(activations),
+       optimizer              = st.sampled_from(optimizers)
+       )
+@settings(deadline=None)
+def test_weights_orthogonalization (samples, inputs, outputs, batch_size, weights_init, activation, optimizer):
+  '''
+  Test the weights orthogonalization algorithm checking that the dot product
+  between each pair of distinct row of the synaptic weights matrix is 0
+  (orthogonal vectors).
+  Notice that the dot product of each row by itself is not 1 because the
+  vectors norms must be conserved (no normalization).
+  It is also assumed that the number of outputs is less or equal to the number
+  of inputs (data features), otherwise a set of orthogonal vectors in the
+  features space does not exist.
+  '''
+
+  def is_orthogonal (A):
+    offdiag = ~np.eye(A.shape[0], dtype=bool)
+    dot = A @ A.transpose()
+    return np.allclose(dot[offdiag], 0.)
+
+  assume(batch_size <= samples)
+  assume(outputs <= inputs)
+
+  data = np.random.uniform(low=0., high=1., size=(samples,inputs)).astype(float)
+
+  bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=1, batch_size=batch_size,
+            weights_init=weights_init(),
+            activation=activation(),
+            optimizer=optimizer(),
+            orthogonalization=True,
+            verbose=False)
+
+  bcm.fit(X=data)
+
+  assert is_orthogonal(bcm.weights)

@@ -65,10 +65,6 @@ class BCM (Base):
       random_state=None, verbose=True):
 
     self.orthogonalization = orthogonalization
-
-    if not -1. < interaction_strength < 1.:
-      raise ValueError('Incorrect value of interaction_strength. It must be in the interval ]-1,1[')
-
     self._interaction_matrix = self._weights_interaction(interaction_strength, outputs)
     self.interaction_strength = interaction_strength
 
@@ -94,6 +90,9 @@ class BCM (Base):
       interaction_matrix : array-like
         Matrix of interactions between weights
     '''
+
+    if not -1. < strength < 1.:
+      raise ValueError('Incorrect value of interaction_strength. It must be in the interval ]-1,1[')
 
     if strength != 0.:
       L = np.full(fill_value=-strength, shape=(outputs, outputs))
@@ -141,9 +140,11 @@ class BCM (Base):
     Core function for the fit member
     '''
 
-    ortho = True if self.orthogonalization else False
+    if self.orthogonalization and self.outputs > self.inputs:
+      raise ValueError('The orthogonalization cannot be performed because the number of '
+                       'outputs is greater than the number of inputs')
 
-    return super(BCM, self)._fit(X=X, norm=False, ortho=ortho)
+    return super(BCM, self)._fit(X=X, norm=False, ortho=self.orthogonalization)
 
   def _predict (self, X):
     '''

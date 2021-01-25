@@ -105,3 +105,47 @@ def test_save_load_weights (samples, inputs, outputs, batch_size,
   os.remove('weights.bin')
 
   assert np.all(hopfield.weights == hopfield_new.weights)
+
+
+
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=50),
+       outputs                = st.integers(min_value=1, max_value=10),
+       k                      = st.integers(min_value=1, max_value=5)
+       )
+@settings(deadline=None)
+def test_predict (samples, inputs, outputs, k):
+  '''
+  Test the predict method in case of null, positive, and negative input 
+  random data and positive or negative weights.
+  '''
+
+  assume(k <= outputs)
+
+  zeros = np.zeros(shape=(samples,inputs)).astype(float)
+  pos = np.random.uniform(low=0., high=1., size=(samples,inputs)).astype(float)
+  neg = np.random.uniform(low=-1., high=0., size=(samples,inputs)).astype(float)
+
+  hopfield = Hopfield(inputs=inputs, outputs=outputs,
+                      weights_init=TruncatedNormal(mu=2.,std=1.),
+                      k=k, verbose=False)
+
+  Y1 = hopfield.predict(X=zeros)
+  assert np.all(Y1 == np.zeros(shape=(outputs,samples)))
+
+  Y2 = hopfield.predict(X=pos)
+  assert np.all(Y2 >= 0.)
+
+  Y3 = hopfield.predict(X=neg)
+  assert np.all(Y3 <= 0.)
+
+  hopfield.weights = - hopfield.weights
+
+  Y4 = hopfield.predict(X=zeros)
+  assert np.all(Y4 == np.zeros(shape=(outputs,samples)))
+
+  Y5 = hopfield.predict(X=pos)
+  assert np.all(Y5 <= 0.)
+
+  Y6 = hopfield.predict(X=neg)
+  assert np.all(Y6 >= 0.)

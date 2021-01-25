@@ -95,8 +95,6 @@ def test_fit_negative_weights (samples, inputs, outputs, num_epochs, batch_size,
   and Relu activation function (so that f(x)=0 forall x <= 0).
   There are no lateral interactions at all between the neurons and the
   orthogonalization algorithm is disabled.
-  The data are generated using a uniform distribution U(0,1) and the weights
-  are initialized using a truncated normal distribution N*(-2,1).
   '''
 
   assume(batch_size <= samples)
@@ -114,6 +112,48 @@ def test_fit_negative_weights (samples, inputs, outputs, num_epochs, batch_size,
   final_weights = np.copy(bcm.weights)
 
   assert np.all(initial_weights == final_weights)
+
+
+
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=50),
+       outputs                = st.integers(min_value=1, max_value=10),
+       )
+@settings(deadline=None)
+def test_predict (samples, inputs, outputs):
+  '''
+  Test the predict method in case of null, positive, and negative input 
+  random data and positive or negative weights.
+  '''
+
+  zeros = np.zeros(shape=(samples,inputs)).astype(float)
+  pos = np.random.uniform(low=0., high=1., size=(samples,inputs)).astype(float)
+  neg = np.random.uniform(low=-1., high=0., size=(samples,inputs)).astype(float)
+
+  bcm = BCM(inputs=inputs, outputs=outputs,
+                weights_init=TruncatedNormal(mu=2.,std=1.),
+                activation=Linear(),
+                verbose=False)
+
+  Y1 = bcm.predict(X=zeros)
+  assert np.all(Y1 == np.zeros(shape=(outputs,samples)))
+
+  Y2 = bcm.predict(X=pos)
+  assert np.all(Y2 >= 0.)
+
+  Y3 = bcm.predict(X=neg)
+  assert np.all(Y3 <= 0.)
+
+  bcm.weights = - bcm.weights
+
+  Y4 = bcm.predict(X=zeros)
+  assert np.all(Y4 == np.zeros(shape=(outputs,samples)))
+
+  Y5 = bcm.predict(X=pos)
+  assert np.all(Y5 <= 0.)
+
+  Y6 = bcm.predict(X=neg)
+  assert np.all(Y6 >= 0.)
 
 
 

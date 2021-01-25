@@ -39,7 +39,7 @@ class Hopfield (Base):
       Lebesgue norm of the weights
 
     k : int (default=2)
-      Ranking parameter, must be integer that is bigger or equal than 2
+      Ranking parameter, must be an integer greater or equal to 1
 
     precision : float (default=1e-30)
       Parameter that controls numerical precision of the weight updates
@@ -65,6 +65,11 @@ class Hopfield (Base):
 
     self.delta = delta
     self.p = p
+
+    if k > outputs:
+      raise ValueError('Incorrect value of the ranking parameter k. '
+                       'It must be less or equal to the number of outputs')
+
     self.k = k
 
     super (Hopfield, self).__init__(inputs=inputs, outputs=outputs, num_epochs=num_epochs, batch_size=batch_size,

@@ -6,6 +6,7 @@ from biolearn.utils.activations import *
 from biolearn.utils.optimizer import *
 from biolearn.utils.weights import *
 
+import os
 import numpy as np
 from biolearn.model.bcm import BCM
 
@@ -78,6 +79,41 @@ def test_constructor (inputs, outputs, num_epochs, batch_size, weights_init, act
 
   bcm = BCM(**params)
   assert params == bcm.get_params()
+
+
+
+@given(samples                = st.integers(min_value=1, max_value=1000),
+       inputs                 = st.integers(min_value=1, max_value=20),
+       outputs                = st.integers(min_value=1, max_value=5),
+       batch_size             = st.integers(min_value=1),
+       weights_init           = st.sampled_from(weights),
+       activation             = st.sampled_from(activations),
+       optimizer              = st.sampled_from(optimizers),
+       interaction_strength   = st.floats(min_value=-1., max_value=1., exclude_min=True, exclude_max=True),
+       )
+@settings(deadline=None)
+def test_save_load_weights (samples, inputs, outputs, batch_size,
+                            weights_init, activation, optimizer,
+                            interaction_strength):
+  '''
+  Test the save and load weights methods.
+  '''
+
+  assume(batch_size <= samples)
+
+  data = np.random.uniform(low=0., high=1., size=(samples,inputs)).astype(float)
+
+  bcm = BCM(inputs=inputs, outputs=outputs, num_epochs=1, batch_size=batch_size,
+            weights_init=weights_init(), activation=activation(), optimizer=optimizer(),
+            interaction_strength=interaction_strength, verbose=False)
+
+  bcm.fit(X=data)
+
+  assert bcm.save_weights('weights.bin')
+  bcm_new = bcm.load_weights('weights.bin')
+  os.remove('weights.bin')
+
+  assert np.all(bcm.weights == bcm_new.weights)
 
 
 

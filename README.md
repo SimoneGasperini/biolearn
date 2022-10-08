@@ -1,6 +1,6 @@
 # Biolearn
 ### Unsupervised neural networks with biological-inspired learning rules
-[![build](https://travis-ci.com/SimoneGasperini/biolearn.svg?)](https://travis-ci.com/)
+[![build](https://app.travis-ci.com/SimoneGasperini/biolearn.svg?branch=main)](https://travis-ci.com/)
 [![docs](https://readthedocs.org/projects/biolearn/badge/?version=latest)](https://biolearn.readthedocs.io/)
 
   - [Prerequisites](#prerequisites)
